@@ -1,0 +1,269 @@
+Q1. Consider a system with ‘n’ processes and ‘m’ resource types.
+Accept number of instances for every resource type. For each process accept 
+the allocation and maximum requirement matrices. Write a program to display the contents 
+of need matrix and to check if the given request of a process can be granted immediately or not. (Use resource request algorithm). 
+
+#include <stdio.h>
+#define MAX 20
+int main() {
+    int n, m;
+    int total[MAX], available[MAX];
+    int allocation[MAX][MAX], maximum[MAX][MAX], need[MAX][MAX];
+    int request[MAX];
+    int i, j, p;
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+    printf("Enter number of resource types: ");
+    scanf("%d", &m);
+    printf("\nEnter total instances of each resource:\n");
+    for (j = 0; j < m; j++) {
+        printf("Resource R%d: ", j);
+        scanf("%d", &total[j]);
+    }
+    printf("\nEnter Allocation Matrix:\n");
+    printf("(Enter %d x %d values)\n", n, m);
+    for (i = 0; i < n; i++) {
+        printf("P%d: ", i);
+        for (j = 0; j < m; j++) {
+            scanf("%d", &allocation[i][j]);
+        }
+    }
+    printf("\nEnter Maximum Requirement Matrix:\n");
+    printf("(Enter %d x %d values)\n", n, m);
+    for (i = 0; i < n; i++) {
+        printf("P%d: ", i);
+        for (j = 0; j < m; j++) {
+            scanf("%d", &maximum[i][j]);
+        }
+    }
+    for (j = 0; j < m; j++) {
+        int allocated = 0;
+        for (i = 0; i < n; i++) {
+            allocated += allocation[i][j];
+        }
+        available[j] = total[j] - allocated;
+    }
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < m; j++) {
+            need[i][j] = maximum[i][j] - allocation[i][j];
+            if (need[i][j] < 0) {
+                printf("\nError: Allocation cannot be greater than Maximum.\n");
+                return 1;
+            }
+        }
+    }
+    printf("\n========== NEED MATRIX ==========\n");
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < m; j++) {
+            printf("%d\t", need[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\nAvailable Resources:\n");
+    for (j = 0; j < m; j++) {
+        printf("R%d = %d\t", j, available[j]);
+    }
+    printf("\n");
+    printf("\nEnter process number making the request (0 to %d): ", n - 1);
+    scanf("%d", &p);
+    if (p < 0 || p >= n) {
+        printf("Invalid process number.\n");
+        return 1;
+    }
+    printf("Enter request for P%d:\n", p);
+    for (j = 0; j < m; j++) {
+        printf("Request R%d: ", j);
+        scanf("%d", &request[j]);
+    }
+    for (j = 0; j < m; j++) {
+        if (request[j] > need[p][j]) {
+            printf("\nRequest cannot be granted.\n");
+            printf("Reason: Process P%d has requested more than its maximum remaining need.\n", p);
+            return 0;
+        }
+    }
+    for (j = 0; j < m; j++) {
+        if (request[j] > available[j]) {
+            printf("\nRequest cannot be granted immediately.\n");
+            printf("Reason: Resources are not currently available.\n");
+            return 0;
+        }
+    }
+    for (j = 0; j < m; j++) {
+        available[j] -= request[j];
+        allocation[p][j] += request[j];
+        need[p][j] -= request[j];
+    }
+    int work[MAX];
+    int finish[MAX] = {0};
+    int safeSequence[MAX];
+    int count = 0;
+    for (j = 0; j < m; j++) {
+        work[j] = available[j];
+    }
+    while (count < n) {
+        int found = 0;
+        for (i = 0; i < n; i++) {
+            if (finish[i] == 0) {
+                int canFinish = 1;
+                for (j = 0; j < m; j++) {
+                    if (need[i][j] > work[j]) {
+                        canFinish = 0;
+                        break;
+                    }
+                }
+                if (canFinish) {
+                    for (j = 0; j < m; j++) {
+                        work[j] += allocation[i][j];
+                    }
+                    safeSequence[count++] = i;
+                    finish[i] = 1;
+                    found = 1;
+                }
+            }
+        }
+        if (!found) {
+            break;
+        }
+    }
+    if (count == n) {
+        printf("\n====================================\n");
+        printf("REQUEST CAN BE GRANTED IMMEDIATELY.\n");
+        printf("The system will remain in a SAFE state.\n");
+        printf("\nSafe Sequence: ");
+        for (i = 0; i < n; i++) {
+            printf("P%d", safeSequence[i]);
+            if (i != n - 1)
+                printf(" -> ");
+        }
+        printf("\n====================================\n");
+    } 
+    else {
+        printf("\n====================================\n");
+        printf("REQUEST CANNOT BE GRANTED.\n");
+        printf("Granting the request would make the system UNSAFE.\n");
+        printf("====================================\n");
+    }
+    return 0;
+}
+
+
+
+
+Q2.Implement the C program to accept n integers to be sorted. Main function creates
+child process using fork system call. Parent process sorts the integers using bubble sort
+and waits for child process using wait system call child process sorts the integers using
+insertion sort.
+
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+void bubbleSort(int a[], int n)
+{
+    int i, j, temp;
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = 0; j < n - i - 1; j++)
+        {
+            if (a[j] > a[j + 1])
+            {
+                temp = a[j];
+                a[j] = a[j + 1];
+                a[j + 1] = temp;
+            }
+        }
+    }
+}
+void insertionSort(int a[], int n)
+{
+    int i, j, key;
+    for (i = 1; i < n; i++)
+    {
+        key = a[i];
+        j = i - 1;
+        while (j >= 0 && a[j] > key)
+        {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = key;
+    }
+}
+void display(int a[], int n)
+{
+    int i;
+    for (i = 0; i < n; i++)
+        printf("%d ", a[i]);
+    printf("\n");
+}
+int main()
+{
+    int n, i;
+    int a[100], b[100];
+    pid_t pid;
+    printf("Enter number of integers: ");
+    scanf("%d", &n);
+    printf("Enter %d integers:\n", n);
+    for (i = 0; i < n; i++)
+    {
+        scanf("%d", &a[i]);
+        b[i] = a[i];
+    }
+    pid = fork();
+    if (pid < 0)
+    {
+        printf("Fork failed\n");
+        return 1;
+    }
+    else if (pid == 0)
+    {
+        printf("\nChild Process\n");
+        insertionSort(b, n);
+        printf("Sorted using Insertion Sort: ");
+        display(b, n);
+    }
+    else
+    {
+        wait(NULL);
+        printf("\nParent Process\n");
+        bubbleSort(a, n);
+        printf("Sorted using Bubble Sort: ");
+        display(a, n);
+    }
+    return 0;
+}
+
+
+
+Q.3) Write a program that demonstrates the use of nice() system call. After a child
+process is started using fork(), assign higher priority to the child using nice system call.
+
+
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+int main()
+{
+    pid_t pid;
+    pid = fork();
+    if (pid < 0)
+    {
+        printf("Fork failed\n");
+        return 1;
+    }
+    if (pid == 0)
+    {
+        printf("Child Process\n");
+        printf("Before nice value: %d\n", nice(0));
+        nice(-5);
+        printf("After nice value: %d\n", nice(0));
+        printf("Child process has higher priority\n");
+    }
+    else
+    {
+        wait(NULL);
+        printf("Parent Process\n");
+    }
+    return 0;
+}

@@ -147,7 +147,43 @@ int main() {
     return 0;
 }
 
+Output:
 
+Enter number of processes: 3
+Enter number of resource types: 3
+Enter total instances of each resource:
+Resource R0: 10
+Resource R1: 5
+Resource R2: 7
+Enter Allocation Matrix:
+Process P0: 0 1 0
+Process P1: 2 0 0
+Process P2: 3 0 2
+Enter Maximum Requirement Matrix:
+Process P0: 7 5 3
+Process P1: 3 2 2
+Process P2: 9 0 2
+
+-----------------------------
+ NEED MATRIX
+-----------------------------
+P0      7       4       3
+P1      1       2       2
+P2      6       0       0
+
+Available Resources:
+R0 = 5   R1 = 4   R2 = 5
+Enter process number making the request (0 to 2): 1
+Enter resource request for P1:
+Request R0: 1
+Request R1: 0
+Request R2: 2
+
+--------------------------------
+REQUEST CAN BE GRANTED
+--------------------------------
+The system remains in a SAFE state.
+Request of Process P1 can be granted immediately.
 
 
 Q2.Implement the C program to accept n integers to be sorted. Main function creates
@@ -233,6 +269,16 @@ int main()
     return 0;
 }
 
+Output:
+
+Enter number of integers: 5
+Enter 5 integers:
+64 25 12 22 11
+Parent Process (Bubble Sort)
+Sorted array by Bubble Sort: 11 12 22 25 64
+Child Process (Insertion Sort)
+Sorted array by Insertion Sort: 11 12 22 25 64
+Parent process: Child process completed.
 
 
 Q.3) Write a program that demonstrates the use of nice() system call. After a child
@@ -267,3 +313,16 @@ int main()
     }
     return 0;
 }
+
+Output:
+
+Parent process started.
+Parent PID: 12345
+Parent Nice value: 0
+Child process started.
+Child PID: 12346
+Child Nice value before change: 0
+Child Nice value after change: -5
+Child process is given higher priority.
+Parent process: Child has completed.
+Parent PID: 12345

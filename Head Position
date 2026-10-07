@@ -4,6 +4,7 @@ head position from the user. Display the list of requests in the
 order in which it is served. Also display the total number of head moments. 
 55, 58, 39, 18, 90, 160, 150, 38, 184 
 Start Head Position: 50
+
 #include <stdio.h>
 #include <stdlib.h>
 int main()
@@ -32,6 +33,16 @@ int main()
  return 0;
 }
 
+Output:
+Enter total number of disk blocks: 1
+Enter current head position: 50
+Enter number of disk requests: 9
+Enter disk request string:
+55, 58, 39, 18, 90, 160, 150, 38, 184 
+Order of requests served:
+50 -> 55 -> 0 -> 0 -> 0 -> 0 -> 0 -> 0 -> 0 -> 0
+Total head movement = 60
+
 
 
 Q.2 Write a simulation program for disk scheduling using SSTF algorithm. 
@@ -40,6 +51,7 @@ position from the user. Display the list of requests in the order in which
 it is served. Also display the total number of head moments. 
 98, 183, 37, 122, 14, 124, 65 
 Start Head Position: 53
+
 #include <stdio.h>
 #include <stdlib.h>
 int main()
@@ -84,6 +96,17 @@ int main()
 }
 
 
+Output:
+Enter total number of disk blocks: 53
+Enter number of disk requests: 7
+Enter disk request string:
+98, 183, 37, 122, 14, 124, 65 
+Enter current head position: 
+Order of requests served:
+0 -> 0 -> 0 -> 0 -> 0 -> 0 -> 0 -> 98
+Total head movement = 98
+
+
 
 
 Q.3 Write a simulation program for disk scheduling using SCAN algorithm. 
@@ -92,6 +115,7 @@ head position from the user. Display the list of requests in the
 order in which it is served. Also display the total number of head moments. 
 82, 170, 43, 140, 24, 16, 190, 65 
 Starting Head position= 50 Direction: Left
+
 #include <stdio.h>
 #include <stdlib.h>
 int main()
@@ -179,6 +203,16 @@ int main()
  return 0;
 }
 
+Output:
+Enter total number of disk blocks: 1
+Enter number of disk requests: 8
+Enter disk request string:
+82, 170, 43, 140, 24, 16, 190, 65 
+Enter current head position: Enter direction (0 = Left, 1 = Right): 
+Order of requests served:
+0 -> 82 -> 791621423
+Total head movement = 791621423
+
 
 
 
@@ -189,6 +223,7 @@ the order in which it is served. Also display the total number of head
 moments. 55, 58, 39, 18, 90, 160, 150, 38. 
 Start Head Position: 100 
 Direction: Left
+
 #include <stdio.h>
 #include <stdlib.h>
 int main()
@@ -265,6 +300,16 @@ int main()
  return 0;
 }
 
+Output:
+Enter total number of disk blocks: 1
+Enter number of disk requests: 8
+Enter disk request string:
+55, 58, 39, 18, 90, 160, 150, 38
+Enter current head position: Enter direction (0 = Left, 1 = Right): 
+Order of requests served:
+0 -> 55 -> 791621423
+Total head movement = 791621423
+
 
 
 
@@ -273,6 +318,7 @@ Accept total number of disk blocks, disk request string, and current head
 position from the user. isplay the list of requests in the order in which it is served. 
 Also display the total number of head moments 
 15, 30, 55, 90, 125, 140, 170 Starting Head Position: 100 
+
 #include <stdio.h>
 #include <stdlib.h>
 int main()
@@ -317,6 +363,11 @@ int main()
  return 0;
 }
 
+Output:
+Order of requests served:
+100 -> 90 -> 55 -> 30 -> 15 -> 30 -> 55 -> 90 -> 125 -> 140 -> 170
+Total head movement = 240
+
 
 
 Q.6 Write a simulation program for disk scheduling using LOOK algorithm. 
@@ -325,6 +376,7 @@ position from the user. Display the list of requests in the order in which it
 is served. Also display the total number of head moments. 
 86, 147, 91, 177, 45, 12, 130 
 Starting Head Position: 60 Direction: Right
+
 #include <stdio.h>
 #include <stdlib.h>
 int main()

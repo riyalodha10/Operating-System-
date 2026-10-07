@@ -3,58 +3,165 @@ the arrival time and first CPU burst for different n number of processes should 
 The next CPU burst should be generated randomly. The output should give Gantt chart, turnaround time and waiting time for each process.
 Also find the average waiting time and turnaround time.
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+struct Process
+{
+    int pid;
+    int arrivalTime;
+    int burstTime;
+    int completionTime;
+    int turnaroundTime;
+    int waitingTime;
+    int completed;
+};
+
 int main()
 {
-    int n, i, j, time = 0, min;
-    int at[20], bt[20], ct[20], wt[20], tat[20], done[20] = {0};
-    float awt = 0, atat = 0;
+    int n, i, j;
+    int currentTime = 0;
+    int completed = 0;
+
     printf("Enter number of processes: ");
     scanf("%d", &n);
-    for(i = 0; i < n; i++)
+
+    struct Process p[n];
+
+    for (i = 0; i < n; i++)
     {
-        printf("P%d Arrival Time: ", i+1);
-        scanf("%d", &at[i]);
-        printf("P%d First CPU Burst: ", i+1);
-        scanf("%d", &bt[i]);
-        bt[i] += rand() % 5 + 1;
+        p[i].pid = i + 1;
+
+        printf("\nEnter Arrival Time for P%d: ", i + 1);
+        scanf("%d", &p[i].arrivalTime);
+
+        printf("Enter First CPU Burst for P%d: ", i + 1);
+        scanf("%d", &p[i].burstTime);
+
+        p[i].completed = 0;
     }
-    printf("\nGantt Chart:\n");
-    for(i = 0; i < n; i++)
+
+    srand(time(NULL));
+
+    printf("\nRandomly generated CPU bursts:\n");
+
+    for (i = 0; i < n; i++)
     {
-        min = -1;
-        for(j = 0; j < n; j++)
-            if(!done[j] && at[j] <= time &&
-              (min == -1 || bt[j] < bt[min]))
-                min = j;
-        if(min == -1)
+        int randomBurst = (rand() % 10) + 1;
+
+        printf("P%d : First Burst = %d, Next Burst = %d\n",
+               p[i].pid, p[i].burstTime, randomBurst);
+
+        p[i].burstTime = randomBurst;
+    }
+
+    printf("\n\nGANTT CHART\n");
+    printf("--------------------------------------------------\n");
+
+    while (completed < n)
+    {
+        int shortest = -1;
+
+        for (i = 0; i < n; i++)
         {
-            time++;
-            i--;
+            if (p[i].completed == 0 &&
+                p[i].arrivalTime <= currentTime)
+            {
+                if (shortest == -1 ||
+                    p[i].burstTime < p[shortest].burstTime)
+                {
+                    shortest = i;
+                }
+            }
+        }
+
+        if (shortest == -1)
+        {
+            currentTime++;
+            printf("| IDLE ");
             continue;
         }
-        printf("| P%d ", min + 1);
-        time += bt[min];
-        ct[min] = time;
-        tat[min] = ct[min] - at[min];
-        wt[min] = tat[min] - bt[min];
-        done[min] = 1;
-        awt += wt[min];
-        atat += tat[min];
+
+        printf("| P%d ", p[shortest].pid);
+
+        currentTime = currentTime + p[shortest].burstTime;
+
+        p[shortest].completionTime = currentTime;
+
+        p[shortest].turnaroundTime =
+            p[shortest].completionTime - p[shortest].arrivalTime;
+
+        p[shortest].waitingTime =
+            p[shortest].turnaroundTime - p[shortest].burstTime;
+
+        p[shortest].completed = 1;
+        completed++;
     }
-    printf("|\n\n");
-    printf("Process\tAT\tBT\tWT\tTAT\n");
-    for(i = 0; i < n; i++)
-        printf("P%d\t%d\t%d\t%d\t%d\n",
-               i+1, at[i], bt[i], wt[i], tat[i]);
-    printf("\nAverage Waiting Time = %.2f", awt/n);
-    printf("\nAverage Turnaround Time = %.2f\n", atat/n);
+
+    printf("|\n");
+    printf("--------------------------------------------------\n");
+
+    printf("\nPROCESS DETAILS\n");
+    printf("\nPID\tAT\tBT\tCT\tTAT\tWT\n");
+    printf("---------------------------------------------\n");
+
+    float totalWaitingTime = 0;
+    float totalTurnaroundTime = 0;
+
+    for (i = 0; i < n; i++)
+    {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid,
+               p[i].arrivalTime,
+               p[i].burstTime,
+               p[i].completionTime,
+               p[i].turnaroundTime,
+               p[i].waitingTime);
+
+        totalWaitingTime += p[i].waitingTime;
+        totalTurnaroundTime += p[i].turnaroundTime;
+    }
+
+    printf("\nAverage Waiting Time = %.2f",
+           totalWaitingTime / n);
+
+    printf("\nAverage Turnaround Time = %.2f\n",
+           totalTurnaroundTime / n);
+
     return 0;
 }
+
+Output:
+
+Enter number of processes: 3
+Enter Arrival Time for P1: 0
+Enter First CPU Burst for P1: 5
+Enter Arrival Time for P2: 1
+Enter First CPU Burst for P2: 4
+Enter Arrival Time for P3: 2
+Enter First CPU Burst for P3: 6
+Randomly generated CPU bursts:
+P1 : First Burst = 5, Next Burst = 5
+P2 : First Burst = 4, Next Burst = 3
+P3 : First Burst = 6, Next Burst = 1
+
+
+GANTT CHART
+--------------------------------------------------
+| P1 | P3 | P2 |
+--------------------------------------------------
+
+PROCESS DETAILS
+
+PID     AT      BT      CT      TAT     WT
+---------------------------------------------
+P1      0       5       5       5       0
+P2      1       3       9       8       5
+P3      2       1       6       4       3
+
+Average Waiting Time = 2.67
+Average Turnaround Time = 5.67
 
 
 
@@ -68,58 +175,177 @@ The output should give Gantt chart, turnaround time and waiting time for each pr
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-int main() {
-    int n, tq, i, time = 0, done = 0;
-    int at[10], bt[10], rem[10], ct[10], wt[10], tat[10];
-    srand(time(0));
+
+struct Process
+{
+    int pid;
+    int arrivalTime;
+    int burstTime;
+    int remainingTime;
+    int completionTime;
+    int turnaroundTime;
+    int waitingTime;
+};
+
+int main()
+{
+    int n, quantum;
+    int i;
+    int currentTime = 0;
+    int completed = 0;
+
     printf("Enter number of processes: ");
     scanf("%d", &n);
-    for(i = 0; i < n; i++) {
-        printf("P%d Arrival Time: ", i + 1);
-        scanf("%d", &at[i]);
-        printf("P%d First CPU Burst: ", i + 1);
-        scanf("%d", &bt[i]);
-        rem[i] = bt[i];
+
+    struct Process p[n];
+
+    for (i = 0; i < n; i++)
+    {
+        p[i].pid = i + 1;
+
+        printf("\nEnter Arrival Time for P%d: ", i + 1);
+        scanf("%d", &p[i].arrivalTime);
+
+        printf("Enter First CPU Burst for P%d: ", i + 1);
+        scanf("%d", &p[i].burstTime);
     }
-    printf("Enter Time Quantum: ");
-    scanf("%d", &tq);
-    printf("\nGantt Chart:\n");
-    while(done < n) {
-        for(i = 0; i < n; i++) {
-            if(at[i] <= time && rem[i] > 0) {
-                printf("| P%d ", i + 1);
-                if(rem[i] > tq) {
-                    time += tq;
-                    rem[i] -= tq;
-                    rem[i] += rand() % 5 + 1;
+
+    printf("\nEnter Time Quantum: ");
+    scanf("%d", &quantum);
+
+    srand(time(NULL));
+
+    printf("\nRandomly generated next CPU bursts:\n");
+
+    for (i = 0; i < n; i++)
+    {
+        int randomBurst = (rand() % 10) + 1;
+
+        printf("P%d : First Burst = %d, Next Burst = %d\n",
+               p[i].pid,
+               p[i].burstTime,
+               randomBurst);
+
+        p[i].burstTime = randomBurst;
+        p[i].remainingTime = p[i].burstTime;
+        p[i].completionTime = 0;
+        p[i].turnaroundTime = 0;
+        p[i].waitingTime = 0;
+    }
+
+    printf("\n\nGANTT CHART\n");
+    printf("--------------------------------------------------\n");
+
+    while (completed < n)
+    {
+        int processExecuted = 0;
+
+        for (i = 0; i < n; i++)
+        {
+            if (p[i].arrivalTime <= currentTime &&
+                p[i].remainingTime > 0)
+            {
+                processExecuted = 1;
+
+                printf("| P%d ", p[i].pid);
+
+                if (p[i].remainingTime > quantum)
+                {
+                    currentTime += quantum;
+                    p[i].remainingTime -= quantum;
                 }
-                else {
-                    time += rem[i];
-                    rem[i] = 0;
-                    ct[i] = time;
-                    done++;
+                else
+                {
+                    currentTime += p[i].remainingTime;
+                    p[i].remainingTime = 0;
+
+                    p[i].completionTime = currentTime;
+
+                    p[i].turnaroundTime =
+                        p[i].completionTime -
+                        p[i].arrivalTime;
+
+                    p[i].waitingTime =
+                        p[i].turnaroundTime -
+                        p[i].burstTime;
+
+                    completed++;
                 }
             }
         }
-        if(done < n)
-            time++;
+
+        if (processExecuted == 0)
+        {
+            currentTime++;
+            printf("| IDLE ");
+        }
     }
+
     printf("|\n");
-    printf("\nProcess\tAT\tCT\tTAT\tWT\n");
-    float awt = 0, atat = 0;
-    for(i = 0; i < n; i++) {
-        tat[i] = ct[i] - at[i];
-        wt[i] = tat[i] - bt[i];
-        printf("P%d\t%d\t%d\t%d\t%d\n",
-               i + 1, at[i], ct[i], tat[i], wt[i]);
-        awt += wt[i];
-        atat += tat[i];
+    printf("--------------------------------------------------\n");
+
+    printf("\nPROCESS DETAILS\n");
+    printf("\nPID\tAT\tBT\tCT\tTAT\tWT\n");
+    printf("---------------------------------------------\n");
+
+    float totalWaitingTime = 0;
+    float totalTurnaroundTime = 0;
+
+    for (i = 0; i < n; i++)
+    {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid,
+               p[i].arrivalTime,
+               p[i].burstTime,
+               p[i].completionTime,
+               p[i].turnaroundTime,
+               p[i].waitingTime);
+
+        totalWaitingTime += p[i].waitingTime;
+        totalTurnaroundTime += p[i].turnaroundTime;
     }
-    printf("\nAverage Waiting Time = %.2f", awt / n);
-    printf("\nAverage Turnaround Time = %.2f\n", atat / n);
+
+    printf("\nAverage Waiting Time = %.2f",
+           totalWaitingTime / n);
+
+    printf("\nAverage Turnaround Time = %.2f\n",
+           totalTurnaroundTime / n);
+
     return 0;
 }
 
+Output:
+
+Enter number of processes: 3
+Enter Arrival Time for P1: 0
+Enter First CPU Burst for P1: 5
+Enter Arrival Time for P2: 1
+Enter First CPU Burst for P2: 4
+Enter Arrival Time for P3: 2
+Enter First CPU Burst for P3: 2
+Enter Time Quantum: 2
+
+Randomly generated next CPU bursts:
+P1 : First Burst = 5, Next Burst = 5
+P2 : First Burst = 4, Next Burst = 4
+P3 : First Burst = 2, Next Burst = 2
+
+
+GANTT CHART
+--------------------------------------------------
+| P1 | P2 | P3 | P1 | P2 | P1 |
+--------------------------------------------------
+
+PROCESS DETAILS
+
+PID     AT      BT      CT      TAT     WT
+---------------------------------------------
+P1      0       5       11      11      6
+P2      1       4       10      9       5
+P3      2       2       6       4       2
+
+Average Waiting Time = 4.33
+Average Turnaround Time = 8.00
 
 
 
@@ -130,75 +356,145 @@ The arrival time and first CPU- burst for different n number of processes should
 The next CPU-burst should be generated randomly. The output should give Gantt chart, turnaround time and waiting time for each process.
 Also find the average waiting time and turnaround time.
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-struct Process {
+
+struct Process
+{
     int pid;
-    int arrival;
-    int burst1;
-    int burst2;
-    int completion;
-    int turnaround;
-    int waiting;
+    int arrivalTime;
+    int burstTime;
+    int completionTime;
+    int turnaroundTime;
+    int waitingTime;
 };
-int main() {
+
+int main()
+{
     int n, i;
-    int current_time = 0;
-    float avg_waiting = 0, avg_turnaround = 0;
+    int currentTime = 0;
+
     printf("Enter number of processes: ");
     scanf("%d", &n);
+
     struct Process p[n];
-    for (i = 0; i < n; i++) {
+
+    for (i = 0; i < n; i++)
+    {
         p[i].pid = i + 1;
+
         printf("\nEnter Arrival Time for P%d: ", i + 1);
-        scanf("%d", &p[i].arrival);
+        scanf("%d", &p[i].arrivalTime);
+
         printf("Enter First CPU Burst for P%d: ", i + 1);
-        scanf("%d", &p[i].burst1);
+        scanf("%d", &p[i].burstTime);
     }
-    srand(time(0));
-    for (i = 0; i < n; i++) {
-        p[i].burst2 = rand() % 10 + 1;
-    }
-    printf("\n\nGANTT CHART\n");
-    printf("---------------------------------------------\n");
-    for (i = 0; i < n; i++) {
-        if (current_time < p[i].arrival) {
-            current_time = p[i].arrival;
-        }
-        printf("| P%d ", p[i].pid);
-        current_time += p[i].burst1;
-        current_time += p[i].burst2;
-        p[i].completion = current_time;
-        p[i].turnaround = p[i].completion - p[i].arrival;
-        p[i].waiting = p[i].turnaround -
-                       (p[i].burst1 + p[i].burst2);
-        avg_waiting += p[i].waiting;
-        avg_turnaround += p[i].turnaround;
-    }
-    printf("|\n");
-    printf("---------------------------------------------\n");
-    printf("\nProcess\tAT\tBurst1\tBurst2\tCT\tTAT\tWT\n");
-    for (i = 0; i < n; i++) {
-        printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+
+    srand(time(NULL));
+
+    printf("\nRandomly generated next CPU bursts:\n");
+
+    for (i = 0; i < n; i++)
+    {
+        int randomBurst = (rand() % 10) + 1;
+
+        printf("P%d : First Burst = %d, Next Burst = %d\n",
                p[i].pid,
-               p[i].arrival,
-               p[i].burst1,
-               p[i].burst2,
-               p[i].completion,
-               p[i].turnaround,
-               p[i].waiting);
+               p[i].burstTime,
+               randomBurst);
+
+        p[i].burstTime = randomBurst;
     }
-    avg_waiting = avg_waiting / n;
-    avg_turnaround = avg_turnaround / n;
-    printf("\nAverage Waiting Time = %.2f", avg_waiting);
-    printf("\nAverage Turnaround Time = %.2f\n", avg_turnaround);
+
+    for (i = 0; i < n - 1; i++)
+    {
+        int j;
+
+        for (j = 0; j < n - i - 1; j++)
+        {
+            if (p[j].arrivalTime > p[j + 1].arrivalTime)
+            {
+                struct Process temp = p[j];
+                p[j] = p[j + 1];
+                p[j + 1] = temp;
+            }
+        }
+    }
+
+    printf("\n\nGANTT CHART\n");
+    printf("--------------------------------------------------\n");
+
+    for (i = 0; i < n; i++)
+    {
+        if (currentTime < p[i].arrivalTime)
+        {
+            printf("| IDLE ");
+            currentTime = p[i].arrivalTime;
+        }
+
+        printf("| P%d ", p[i].pid);
+
+        currentTime = currentTime + p[i].burstTime;
+
+        p[i].completionTime = currentTime;
+
+        p[i].turnaroundTime =
+            p[i].completionTime - p[i].arrivalTime;
+
+        p[i].waitingTime =
+            p[i].turnaroundTime - p[i].burstTime;
+    }
+
+    printf("|\n");
+    printf("--------------------------------------------------\n");
+
+    printf("\nPROCESS DETAILS\n");
+    printf("\nPID\tAT\tBT\tCT\tTAT\tWT\n");
+    printf("---------------------------------------------\n");
+
+    float totalWaitingTime = 0;
+    float totalTurnaroundTime = 0;
+
+    for (i = 0; i < n; i++)
+    {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid,
+               p[i].arrivalTime,
+               p[i].burstTime,
+               p[i].completionTime,
+               p[i].turnaroundTime,
+               p[i].waitingTime);
+
+        totalWaitingTime += p[i].waitingTime;
+        totalTurnaroundTime += p[i].turnaroundTime;
+    }
+
+    printf("\nAverage Waiting Time = %.2f",
+           totalWaitingTime / n);
+
+    printf("\nAverage Turnaround Time = %.2f\n",
+           totalTurnaroundTime / n);
+
     return 0;
 }
 
+Output:
+GANTT CHART
+--------------------------------------------------
+| P1 | P2 | P3 |
+--------------------------------------------------
 
+PROCESS DETAILS
 
+PID     AT      BT      CT      TAT     WT
+---------------------------------------------
+P1      0       5       5       5       0
+P2      1       4       9       8       4
+P3      2       2       11      9       7
+
+Average Waiting Time = 3.67
+Average Turnaround Time = 7.33
 
 
 
@@ -208,56 +504,176 @@ The arrival time and first CPU-burst and priority for different n number of proc
 The next CPU-burst should be generated randomly. The output should give Gantt chart, turnaround time and waiting time for each process.
 Also find the average waiting time and turnaround time .
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-int main() {
-    int n, i, t = 0, done = 0;
-    int at[20], bt[20], rem[20], pr[20], ct[20], tat[20], wt[20];
-    float awt = 0, atat = 0;
-    srand(time(0));
+
+struct Process
+{
+    int pid;
+    int arrivalTime;
+    int burstTime;
+    int remainingTime;
+    int priority;
+    int completionTime;
+    int turnaroundTime;
+    int waitingTime;
+};
+
+int main()
+{
+    int n, i;
+    int currentTime = 0;
+    int completed = 0;
+    int lastProcess = -1;
+
     printf("Enter number of processes: ");
     scanf("%d", &n);
-    for(i = 0; i < n; i++) {
-        printf("P%d Arrival Time, Burst Time, Priority: ", i+1);
-        scanf("%d%d%d", &at[i], &bt[i], &pr[i]);
-        rem[i] = bt[i];
+
+    struct Process p[n];
+
+    for (i = 0; i < n; i++)
+    {
+        p[i].pid = i + 1;
+
+        printf("\nEnter Arrival Time for P%d: ", i + 1);
+        scanf("%d", &p[i].arrivalTime);
+
+        printf("Enter First CPU Burst for P%d: ", i + 1);
+        scanf("%d", &p[i].burstTime);
+
+        printf("Enter Priority for P%d: ", i + 1);
+        scanf("%d", &p[i].priority);
     }
-    printf("\nGantt Chart:\n");
-    while(done < n) {
-        int p = -1;
-        for(i = 0; i < n; i++)
-            if(at[i] <= t && rem[i] > 0 &&
-              (p == -1 || pr[i] < pr[p]))
-                p = i;
-        if(p == -1) {
-            t++;
+
+    srand(time(NULL));
+
+    printf("\nRandomly generated next CPU bursts:\n");
+
+    for (i = 0; i < n; i++)
+    {
+        int randomBurst = (rand() % 10) + 1;
+
+        printf("P%d : First Burst = %d, Next Burst = %d\n",
+               p[i].pid,
+               p[i].burstTime,
+               randomBurst);
+
+        p[i].burstTime = randomBurst;
+        p[i].remainingTime = p[i].burstTime;
+        p[i].completionTime = 0;
+        p[i].turnaroundTime = 0;
+        p[i].waitingTime = 0;
+    }
+
+    printf("\n\nGANTT CHART\n");
+    printf("--------------------------------------------------\n");
+
+    while (completed < n)
+    {
+        int highestPriority = -1;
+
+        for (i = 0; i < n; i++)
+        {
+            if (p[i].arrivalTime <= currentTime &&
+                p[i].remainingTime > 0)
+            {
+                if (highestPriority == -1 ||
+                    p[i].priority < p[highestPriority].priority)
+                {
+                    highestPriority = i;
+                }
+            }
+        }
+
+        if (highestPriority == -1)
+        {
+            if (lastProcess != -2)
+            {
+                printf("| IDLE ");
+                lastProcess = -2;
+            }
+
+            currentTime++;
             continue;
         }
-        printf("| P%d ", p+1);
-        rem[p]--;
-        t++;
-        if(rem[p] == 0) {
-            ct[p] = t;
-            done++;
+
+        if (lastProcess != highestPriority)
+        {
+            printf("| P%d ", p[highestPriority].pid);
+            lastProcess = highestPriority;
+        }
+
+        p[highestPriority].remainingTime--;
+        currentTime++;
+
+        if (p[highestPriority].remainingTime == 0)
+        {
+            p[highestPriority].completionTime = currentTime;
+
+            p[highestPriority].turnaroundTime =
+                p[highestPriority].completionTime -
+                p[highestPriority].arrivalTime;
+
+            p[highestPriority].waitingTime =
+                p[highestPriority].turnaroundTime -
+                p[highestPriority].burstTime;
+
+            completed++;
         }
     }
-    printf("|\n\nProcess\tTAT\tWT\n");
-    for(i = 0; i < n; i++) {
-        tat[i] = ct[i] - at[i];
-        wt[i] = tat[i] - bt[i];
-        printf("P%d\t%d\t%d\n", i+1, tat[i], wt[i]);
-        awt += wt[i];
-        atat += tat[i];
+
+    printf("|\n");
+    printf("--------------------------------------------------\n");
+
+    printf("\nPROCESS DETAILS\n");
+    printf("\nPID\tAT\tBT\tP\tCT\tTAT\tWT\n");
+    printf("------------------------------------------------\n");
+
+    float totalWaitingTime = 0;
+    float totalTurnaroundTime = 0;
+
+    for (i = 0; i < n; i++)
+    {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid,
+               p[i].arrivalTime,
+               p[i].burstTime,
+               p[i].priority,
+               p[i].completionTime,
+               p[i].turnaroundTime,
+               p[i].waitingTime);
+
+        totalWaitingTime += p[i].waitingTime;
+        totalTurnaroundTime += p[i].turnaroundTime;
     }
-    printf("\nAverage Waiting Time = %.2f", awt/n);
-    printf("\nAverage Turnaround Time = %.2f\n", atat/n);
+
+    printf("\nAverage Waiting Time = %.2f",
+           totalWaitingTime / n);
+
+    printf("\nAverage Turnaround Time = %.2f\n",
+           totalTurnaroundTime / n);
+
     return 0;
 }
 
+Output:
 
+GANTT CHART
+--------------------------------------------------
+| P1 | P2 | P3 | P1 |
+--------------------------------------------------
 
+PROCESS DETAILS
+
+PID     AT      BT      P       CT      TAT     WT
+------------------------------------------------
+P1      0       7       3       14      14      7
+P2      1       4       1       5       4       0
+P3      2       3       2       8       6       3
+
+Average Waiting Time = 3.33
+Average Turnaround Time = 8.00
 
 
 5. Write the program to simulate Preemptive Shortest Job First (SJF) scheduling.
@@ -265,54 +681,170 @@ The arrival time and first CPU burst for different n number of processes should 
 The next CPU burst should be generated randomly. The output should give Gantt chart, turnaround time and waiting time for each process.
 Also find the average waiting time and turnaround time
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-int main() {
-    int n, i, t = 0, done = 0;
-    int at[20], bt[20], rt[20], ct[20], wt[20], tat[20];
+
+struct Process
+{
+    int pid;
+    int arrivalTime;
+    int burstTime;
+    int remainingTime;
+    int completionTime;
+    int turnaroundTime;
+    int waitingTime;
+};
+
+int main()
+{
+    int n, i;
+    int currentTime = 0;
+    int completed = 0;
+    int lastProcess = -1;
+
     printf("Enter number of processes: ");
     scanf("%d", &n);
-    for(i = 0; i < n; i++) {
-        printf("Arrival time and first burst of P%d: ", i + 1);
-        scanf("%d%d", &at[i], &bt[i]);
-        rt[i] = bt[i];
+
+    struct Process p[n];
+
+    for (i = 0; i < n; i++)
+    {
+        p[i].pid = i + 1;
+
+        printf("\nEnter Arrival Time for P%d: ", i + 1);
+        scanf("%d", &p[i].arrivalTime);
+
+        printf("Enter First CPU Burst for P%d: ", i + 1);
+        scanf("%d", &p[i].burstTime);
     }
-    srand(time(0));
-    printf("\nGantt Chart:\n");
-    while(done < n) {
-        int p = -1, min = 9999;
-        for(i = 0; i < n; i++)
-            if(at[i] <= t && rt[i] > 0 && rt[i] < min)
-                min = rt[i], p = i;
-        if(p == -1) {
-            t++;
+
+    srand(time(NULL));
+
+    printf("\nRandomly generated next CPU bursts:\n");
+
+    for (i = 0; i < n; i++)
+    {
+        int randomBurst = (rand() % 10) + 1;
+
+        printf("P%d : First Burst = %d, Next Burst = %d\n",
+               p[i].pid,
+               p[i].burstTime,
+               randomBurst);
+
+        p[i].burstTime = randomBurst;
+        p[i].remainingTime = p[i].burstTime;
+        p[i].completionTime = 0;
+        p[i].turnaroundTime = 0;
+        p[i].waitingTime = 0;
+    }
+
+    printf("\n\nGANTT CHART\n");
+    printf("--------------------------------------------------\n");
+
+    while (completed < n)
+    {
+        int shortest = -1;
+
+        for (i = 0; i < n; i++)
+        {
+            if (p[i].arrivalTime <= currentTime &&
+                p[i].remainingTime > 0)
+            {
+                if (shortest == -1 ||
+                    p[i].remainingTime <
+                    p[shortest].remainingTime)
+                {
+                    shortest = i;
+                }
+            }
+        }
+
+        if (shortest == -1)
+        {
+            if (lastProcess != -2)
+            {
+                printf("| IDLE ");
+                lastProcess = -2;
+            }
+
+            currentTime++;
             continue;
         }
-        printf("| P%d ", p + 1);
-        rt[p]--;
-        t++;
-        if(rt[p] == 0) {
-            ct[p] = t;
-            done++;
+
+        if (lastProcess != shortest)
+        {
+            printf("| P%d ", p[shortest].pid);
+            lastProcess = shortest;
+        }
+
+        p[shortest].remainingTime--;
+        currentTime++;
+
+        if (p[shortest].remainingTime == 0)
+        {
+            p[shortest].completionTime = currentTime;
+
+            p[shortest].turnaroundTime =
+                p[shortest].completionTime -
+                p[shortest].arrivalTime;
+
+            p[shortest].waitingTime =
+                p[shortest].turnaroundTime -
+                p[shortest].burstTime;
+
+            completed++;
         }
     }
+
     printf("|\n");
-    for(i = 0; i < n; i++) {
-        tat[i] = ct[i] - at[i];
-        wt[i] = tat[i] - bt[i];
-        printf("P%d next CPU burst = %d\n", i + 1, rand() % 10 + 1);
-    }
-    float aw = 0, atat = 0;
-    printf("\nProcess\tAT\tBT\tCT\tTAT\tWT\n");
-    for(i = 0; i < n; i++) {
+    printf("--------------------------------------------------\n");
+
+    printf("\nPROCESS DETAILS\n");
+    printf("\nPID\tAT\tBT\tCT\tTAT\tWT\n");
+    printf("---------------------------------------------\n");
+
+    float totalWaitingTime = 0;
+    float totalTurnaroundTime = 0;
+
+    for (i = 0; i < n; i++)
+    {
         printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
-               i + 1, at[i], bt[i], ct[i], tat[i], wt[i]);
-        aw += wt[i];
-        atat += tat[i];
+               p[i].pid,
+               p[i].arrivalTime,
+               p[i].burstTime,
+               p[i].completionTime,
+               p[i].turnaroundTime,
+               p[i].waitingTime);
+
+        totalWaitingTime += p[i].waitingTime;
+        totalTurnaroundTime += p[i].turnaroundTime;
     }
-    printf("\nAverage Waiting Time = %.2f", aw / n);
-    printf("\nAverage Turnaround Time = %.2f\n", atat / n);
+
+    printf("\nAverage Waiting Time = %.2f",
+           totalWaitingTime / n);
+
+    printf("\nAverage Turnaround Time = %.2f\n",
+           totalTurnaroundTime / n);
+
     return 0;
 }
+
+Output:
+
+GANTT CHART
+--------------------------------------------------
+| P1 | P2 | P3 | P2 | P1 |
+--------------------------------------------------
+
+PROCESS DETAILS
+
+PID     AT      BT      CT      TAT     WT
+---------------------------------------------
+P1      0       7       12      12      5
+P2      1       4       8       7       3
+P3      2       2       4       2       0
+
+Average Waiting Time = 2.67
+Average Turnaround Time = 7.00
+

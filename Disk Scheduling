@@ -420,3 +420,9 @@ int main()
  printf("\nTotal head movement = %d\n", total);
 Return 0;
 }
+
+Output:
+
+Order of requests served:
+60 -> 86 -> 91 -> 130 -> 147 -> 177 -> 45 -> 12
+Total head movement = 302
